@@ -1,0 +1,44 @@
+Python 2.7.15
+name: ldsc_py2
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - _openmp_mutex=4.5
+  - bitarray=0.8.3
+  - ca-certificates=2026.4.22
+  - certifi=2019.11.28
+  - ld_impl_linux-64=2.45.1
+  - libblas=3.9.0
+  - libcblas=3.9.0
+  - libffi=3.2.1
+  - libgcc=15.2.0
+  - libgcc-ng=15.2.0
+  - libgfortran-ng=7.5.0
+  - libgfortran4=7.5.0
+  - libgfortran5=15.2.0
+  - libgomp=15.2.0
+  - liblapack=3.9.0
+  - libopenblas=0.3.25
+  - libsqlite=3.46.0
+  - libstdcxx=15.2.0
+  - libstdcxx-ng=15.2.0
+  - libzlib=1.2.13
+  - ncurses=6.6
+  - numpy=1.16.5
+  - openssl=1.1.1w
+  - pandas=0.20.3
+  - pip=20.1.1
+  - python=2.7.15
+  - python-dateutil=2.8.1
+  - python_abi=2.7
+  - pytz=2020.1
+  - readline=8.3
+  - scipy=1.2.1
+  - setuptools=44.0.0
+  - six=1.16.0
+  - sqlite=3.46.0
+  - tk=8.6.13
+  - wheel=0.37.1
+  - zlib=1.2.13

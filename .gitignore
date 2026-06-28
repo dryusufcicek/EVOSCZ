@@ -1,0 +1,97 @@
+# ── EVOSCZ public code release — keep CODE, exclude paper/data/PII ──
+# (Code availability accompanying the manuscript)
+
+# Paper & write-ups (not public pre-publication)
+manuscript/
+supplementary/*.docx
+supplementary/*.xlsx
+supplementary/*.bak*
+*.docx
+*.pdf
+
+# Data (raw + processed + large derived) — released via Data availability statement
+data/
+results/
+logs/
+*.parquet
+*.tsv.gz
+*.vcf
+*.vcf.gz
+*.bed
+*.bim
+*.fam
+*.annot.gz
+*.l2.*
+*.sumstats*
+
+# Backups / superseded / scratch
+*.bak
+*.bak.*
+*_bak*
+*.bak_*
+*_PRELIMINARY*
+_backups/
+scratch/
+
+# Sibling / separate projects (NOT this paper)
+EVOSCZ-CLINICAL/
+EVOSCZ-CROW/
+EVOSCZ-REGIMES/
+evoscz-ATA/
+ECNP_2026/
+
+# Tooling / env / OS
+.claude/
+__pycache__/
+*.pyc
+*.egg-info/
+.DS_Store
+.ipynb_checkpoints/
+envs/
+
+# Vendored LDSC fork is included as a subdir but ignore its data/outputs
+scripts/phase14e/ldsc/*.bak*
+
+# Legacy phases — superseded, NOT part of the v25_3 manuscript pipeline
+scripts/phase8/
+scripts/phase9/
+scripts/phase10/
+
+# Manuscript/supplement packaging — read collaborator docx + external Downloads paths,
+# not reproducible standalone (the science lives in phase14e/phase17/phase18 *.sh + results)
+scripts/phase18/P18_build_all_csvs.py
+scripts/phase18/P18_build_csvs_pass2.py
+scripts/phase18/P18_inplace_docx_update.py
+scripts/phase18/P18_pass3_full_rebuild.py
+
+# Internal collaboration working-kit (not reproduction code)
+scripts/phase17/README_v22_perm.md
+
+# Internal planning / QA / status docs (not part of the public release)
+/AUDIT_FINDINGS.md
+/CODE_RELEASE_PLAN.md
+/MORNING_STATUS_*.md
+/REFRAME_VERIFICATION_*.md
+/NUMBER_AUDIT*.md
+/main.pdf
+
+# Root-level scratch / external-API-test scripts (not part of the pipeline)
+/query_schema.py
+/test_allel.py
+/test_fetch.py
+/test_gwas_api.py
+/test_ot_*.py
+/test_query.py
+
+# Archives / data indices
+*.zip
+*.tbi
+
+# Other root directories not part of the code release
+/docs/
+/config/
+/figures/
+
+# Vendored LDSC fork: keep the code, drop the Python-2 test fixtures
+scripts/phase14e/ldsc/test/
+/DATA_CODE_AVAILABILITY.md
