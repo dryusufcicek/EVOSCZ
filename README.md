@@ -1,6 +1,6 @@
 # EVOSCZ — Evolutionary architecture of schizophrenia common-variant heritability
 
-Analysis code accompanying the manuscript *Common schizophrenia heritability concentrates in an evolutionarily young, brain-regulatory subset of fine-mapped credible-set variants* (Çiçek, Altunç & Demirel, 2026).
+Analysis code accompanying the manuscript *Common schizophrenia heritability concentrates in an evolutionarily young, brain-regulatory subset of fine-mapped credible-set variants* (Çiçek, Altunç, Demirel & Velioğlu 2026).
 
 We partition fine-mapped PGC3 schizophrenia credible-set variants by coalescent allele age, ancient-DNA/haplotype selection signals, and brain-versus-blood regulatory specificity (3-component Gaussian mixture), and show that the youngest, brain-regulatory subset concentrates common-variant heritability (stratified LD-score regression, baseline-LD v2.2). All subsets are deeply ancient (cluster medians ≈113–508 kyr, pre-out-of-Africa). Allele ages are GEVA/Atlas-of-Variant-Age estimates in **generations**, converted to years at 28.1 yr generation⁻¹.
 
