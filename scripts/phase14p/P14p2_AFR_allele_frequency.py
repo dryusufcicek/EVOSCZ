@@ -23,7 +23,7 @@ Inputs:
 Outputs (results/phase14p_baseline/):
   - P14p2_a_AFR_freq_lookup.tsv.gz       — per-rsid AFR allele frequency
   - P14p2_b_partition_summary.tsv         — overall + per-cluster partition counts
-  - P14p2_NARRATIVE.md                    — narrative log
+  - P14p2_run.log                         — run log
 """
 
 import gzip
@@ -231,78 +231,8 @@ pd.DataFrame(freq_rows).to_csv(OUT / "P14p2_c_AFR_freq_per_cluster.tsv",
 log(f"  saved → P14p2_c_AFR_freq_per_cluster.tsv")
 
 # Narrative
-narr_path = OUT / "P14p2_NARRATIVE.md"
-narr = []
-narr.append(f"# Phase 14p2 — AFR Allele Frequency Lookup for PGC3 EUR Credible-Set\n\n")
-narr.append(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n")
-narr.append(f"**Purpose:** Foundation for H_AFR pre-OOA AMH-shared partition test.\n\n")
-
-narr.append(f"## Inputs\n")
-narr.append(f"- PGC3 EUR credible-set: `variant_master_v4.parquet` ({len(credset_rsids):,} rsids)\n")
-narr.append(f"- PGC3 AFRAM sumstats: `PGC3_SCZ_wave3.afram.autosome.public.v3.vcf.tsv.gz`\n")
-narr.append(f"  (N = {N_AFR_CASES} cases + {N_AFR_CONTROLS} controls = {N_AFR_TOTAL})\n\n")
-
-narr.append(f"## Match rate\n")
-narr.append(f"- AFRAM sumstats rows scanned: {n_data_lines:,}\n")
-narr.append(f"- Credible-set rsids matched in AFRAM: {n_matched:,}/{len(credset_rsids):,} "
-            f"({n_matched/len(credset_rsids)*100:.2f}%)\n\n")
-
-narr.append(f"## AFR partition classification\n\n")
-narr.append(f"**Overall (all {len(merged):,} credible-set variants):**\n\n")
-narr.append(f"| Partition | Count | % |\n|---|---|---|\n")
-for k in ["AFR_polymorphic", "AFR_rare", "AFR_monomorphic", "absent_from_AFRAM"]:
-    v = overall.get(k, 0)
-    narr.append(f"| {k} | {v:,} | {v/len(merged)*100:.2f}% |\n")
-
-narr.append(f"\n**Per-cluster:**\n\n")
-narr.append(f"| Cluster | n | AFR_polymorphic | AFR_rare | AFR_monomorphic | absent_from_AFRAM |\n")
-narr.append(f"|---|---|---|---|---|---|\n")
-for c in [0.0, 1.0, 2.0]:
-    sub = merged[merged["cluster"] == c]
-    if len(sub) == 0:
-        continue
-    vc = sub["AFR_partition"].value_counts()
-    parts = " | ".join(
-        f"{vc.get(k, 0):,} ({vc.get(k, 0)/len(sub)*100:.1f}%)"
-        for k in ["AFR_polymorphic", "AFR_rare", "AFR_monomorphic", "absent_from_AFRAM"]
-    )
-    narr.append(f"| C{int(c)} | {len(sub):,} | {parts} |\n")
-
-narr.append(f"\n## AFR allele frequency distribution per cluster\n\n")
-narr.append(f"| Cluster | n | median f_AFR | mean f_AFR | q01 | q99 | %≥1% | %≥5% |\n|---|---|---|---|---|---|---|---|\n")
-for row in freq_rows:
-    narr.append(f"| {row['cluster']} | {row['n_with_AFR_freq']:,} | "
-                f"{row['AFR_f_median']:.3f} | {row['AFR_f_mean']:.3f} | "
-                f"{row['AFR_f_q01']:.3f} | {row['AFR_f_q99']:.3f} | "
-                f"{row['pct_AFR_polymorphic_ge1pct']:.1f}% | "
-                f"{row['pct_AFR_polymorphic_ge5pct']:.1f}% |\n")
-
-narr.append(f"\n## Interpretation guide\n\n")
-narr.append(f"- **AFR_polymorphic (f_AFR ≥ 1%)**: variant segregates in AFR ancestry. ")
-narr.append(f"Candidate for pre-OOA AMH-shared if deep TMRCA (test in next step with Wohns 2022).\n")
-narr.append(f"- **AFR_rare (0 < f_AFR < 1%)**: present but uncommon in AFR. ")
-narr.append(f"Could be drift-affected or recently-derived ancestral.\n")
-narr.append(f"- **AFR_monomorphic (f_AFR == 0)**: derived in non-AFR lineage post-OOA; ")
-narr.append(f"strong candidate for EUR-private post-OOA-derived.\n")
-narr.append(f"- **absent_from_AFRAM**: not in AFRAM sumstats panel (low imputation quality, ")
-narr.append(f"reference mismatch, or genuinely absent).\n\n")
-
-narr.append(f"## Next step\n\n")
-narr.append(f"Cross-reference AFR_polymorphic subset with Wohns 2022 unified tree sequence "
-            f"to derive deep-time-valid TMRCA. Variants with both (AFR-polymorphic) AND "
-            f"(Wohns AFR-context TMRCA > 60 kyr) → genuine pre-OOA AMH-shared partition.\n\n")
-
-narr.append(f"## Files\n")
-narr.append(f"- `P14p2_a_AFR_freq_lookup.tsv.gz`     — per-rsid AFR allele frequency (AFRAM hits only)\n")
-narr.append(f"- `P14p2_a_AFR_freq_full.tsv.gz`       — full credible-set + AFR partition + cluster\n")
-narr.append(f"- `P14p2_b_partition_summary.tsv`      — partition counts per cluster + overall\n")
-narr.append(f"- `P14p2_c_AFR_freq_per_cluster.tsv`   — AFR freq distribution per cluster\n\n")
-
-narr.append(f"## Run log\n\n```\n")
-narr.extend(line + "\n" for line in LOG)
-narr.append("```\n")
-
-with open(narr_path, "w") as f:
-    f.writelines(narr)
-log(f"\nWrote: {narr_path}")
+log_path = OUT / "P14p2_run.log"
+with open(log_path, "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"\nWrote run log: {log_path}")
 log("\nPhase 14p2 complete.")

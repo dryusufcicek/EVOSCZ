@@ -100,37 +100,15 @@ with open(tsv, "w") as f:
                 f"{r['Prop_h2_se']:.10g}\t{r['Enrichment']:.10g}\t{r['Enrichment_se']:.10g}\t"
                 f"{r['Enrichment_P']:.10g}\t{r['Coef']:.10g}\t{r['Coef_se']:.10g}\t{r['Z']:.10g}\n")
 
-# ── write markdown summary ──────────────────────────────────────────────────
-md = os.path.join(BASE, "null_summary_v22_n1000.md")
+# ── write summary table ──────────────────────────────────────────────────────
+md = os.path.join(BASE, "null_summary_v22_n1000.tsv")
 with open(md, "w") as f:
-    f.write("# Empirical matched-LD-MAF permutation null — n=1000 (baseline-LD v2.2)\n\n")
-    f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-    f.write(f"- Baseline-LD model: v2.2 (Gazal 2017; 97 annotations)\n")
-    f.write(f"- N permutations parsed: **{n}** / {N_PERM} "
-            f"(missing: {len(missing)}{' ' + str(missing) if missing else ''})\n")
-    f.write(f"- Pool: baselineLD.annot.gz ∩ 1KG.EUR.frq (full ~10M SNP) + "
-            f"positional nearest-HM3 LD-score impute; C0 captured 1744/1744 per draw\n")
-    f.write(f"- Metric: L2_1 (perm annotation) conditional Coefficient *Z*-score\n\n")
-    f.write(f"- Observed C0 conditional *Z* (primary v22 PGC3 EUR SCZ): **+{OBSERVED_Z:.2f}** "
-            f"(enrichment {OBSERVED_ENRICH:.2f}×)\n\n")
-    f.write("## Null distribution\n\n")
-    f.write(f"- Null mean *Z* ± SD: **{mean_z:+.3f} ± {sd_z:.3f}**\n")
-    f.write(f"- Null *Z* range: [{zmin:+.3f}, {zmax:+.3f}]\n")
-    f.write(f"- Null enrichment mean ± SD: **{mean_e:+.2f}× ± {sd_e:.2f}**\n")
-    f.write(f"- Controls reaching observed *Z* ≥ +{OBSERVED_Z:.2f}: **{n_exceed}/{n}**\n")
-    f.write(f"- Observed percentile within null: **{pctile:.2f}%**\n")
-    f.write(f"- Position: observed *Z* is **{pos_sd:.2f} SD** above null mean\n")
-    f.write(f"- Empirical *P* = ({n_exceed}+1)/({n}+1) = **{emp_p:.3e}**\n")
-    f.write(f"- Parametric one-sided Gaussian *P* (z={pos_sd:.2f}) = **{gauss_p:.3e}**\n\n")
-    f.write("## Interpretation\n\n")
-    if n_exceed == 0:
-        f.write(f"The observed C0 conditional *Z* = +{OBSERVED_Z:.2f} lies entirely outside the "
-                f"matched-LD-MAF empirical null under baseline-LD v2.2 ({n_exceed}/{n} controls "
-                f"reached it; null {mean_z:+.2f} ± {sd_z:.2f}). Empirical *P* = {emp_p:.1e} "
-                f"(resolution floor 1/{n+1}); parametric Gaussian *P* = {gauss_p:.1e}.\n")
-    else:
-        f.write(f"{n_exceed}/{n} control annotations reached or exceeded the observed *Z*. "
-                f"Empirical *P* = {emp_p:.3e}.\n")
+    f.write("n_parsed\tn_perm_expected\tn_missing\tnull_Z_mean\tnull_Z_sd\tnull_Z_min\tnull_Z_max\t"
+            "null_enrichment_mean\tnull_enrichment_sd\tobserved_Z\tobserved_enrichment\tn_controls_Z_ge_observed\t"
+            "observed_percentile\tobserved_minus_null_mean_in_SD\tempirical_P\tgaussian_one_sided_P\n")
+    f.write(f"{n}\t{N_PERM}\t{len(missing)}\t{mean_z:.6f}\t{sd_z:.6f}\t{zmin:.6f}\t{zmax:.6f}\t"
+            f"{mean_e:.6f}\t{sd_e:.6f}\t{OBSERVED_Z:.2f}\t{OBSERVED_ENRICH:.2f}\t{n_exceed}\t"
+            f"{pctile:.6f}\t{pos_sd:.6f}\t{emp_p:.6e}\t{gauss_p:.6e}\n")
 
 # ── console ─────────────────────────────────────────────────────────────────
 print(f"Phase 17D v22 NULL SUMMARY n=1000 — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
@@ -146,4 +124,4 @@ print(f"Position (SD)    : {pos_sd:.4f} SD above null mean")
 print(f"Empirical P      : {emp_p:.4e}  (floor 1/{n+1})")
 print(f"Gaussian P (1s)  : {gauss_p:.4e}")
 print(f"\nTSV : {tsv}")
-print(f"MD  : {md}")
+print(f"SUMMARY : {md}")

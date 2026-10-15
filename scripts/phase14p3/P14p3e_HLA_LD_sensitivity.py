@@ -22,7 +22,7 @@ Pre-registered:
 
 Outputs:
   results/phase14p3/P14p3e_HLA_LD_sensitivity.tsv
-  results/phase14p3/P14p3e_NARRATIVE.md
+  results/phase14p3/P14p3e_run.log
 """
 
 from pathlib import Path
@@ -166,9 +166,7 @@ log(f"  HLA exclusion retention: {hla_pct:.1f}%  (threshold ≥80%)")
 log(f"  LD-pruning retention:    {ld_pct:.1f}%  (threshold ≥70%)") if not np.isnan(ld_pct) else log("  LD-pruning: skipped")
 
 # Save narrative
-with open(OUT / "P14p3e_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p3e — HLA + LD sensitivity\n\n")
-    f.write(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n\n## Run log\n\n```\n")
-    f.write("\n".join(LOG))
-    f.write("\n```\n")
+with open(OUT / "P14p3e_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p3e_run.log'}")
 log("\nPhase 14p3e complete.")

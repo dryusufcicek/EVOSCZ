@@ -15,7 +15,7 @@ Output:
   results/phase11/variant_master_v4.parquet
   results/phase14d/P14d_per_celltype_age_tests.tsv
   results/phase14d/P14d_cluster_celltype_enrichment.tsv
-  results/phase14d/P14d_NARRATIVE.md
+  results/phase14d/P14d_run.log
 """
 
 import pandas as pd
@@ -204,11 +204,7 @@ df_clusters.to_csv(OUT / "P14d_cluster_celltype_enrichment.tsv", sep="\t", index
 
 
 # ─── Save log ─────────────────────────────────────────────────────────────
-with open(OUT / "P14d_NARRATIVE.md", "w") as f:
-    f.write("# Phase 14d: Bryois Cell-Type Analysis\n\n")
-    f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-    f.write("```\n")
-    for line in LOG: f.write(line + "\n")
-    f.write("```\n")
-log(f"\nNarrative: {OUT / 'P14d_NARRATIVE.md'}")
+with open(OUT / "P14d_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14d_run.log'}")
 log("\nPhase 14d complete.")

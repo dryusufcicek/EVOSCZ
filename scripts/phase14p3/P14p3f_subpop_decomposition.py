@@ -14,7 +14,7 @@ Pre-registered:
 
 Output:
   results/phase14p3/P14p3f_subpop_replication.tsv
-  results/phase14p3/P14p3f_NARRATIVE.md
+  results/phase14p3/P14p3f_run.log
 """
 
 from pathlib import Path
@@ -123,9 +123,7 @@ elif replicated >= 2:
 else:
     log("  VERDICT: NOT REPLICATED — signal may be population-structure-driven")
 
-with open(OUT / "P14p3f_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p3f — Per-AFR-subpop replication\n\n")
-    f.write(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n\n## Run log\n\n```\n")
-    f.write("\n".join(LOG))
-    f.write("\n```\n")
+with open(OUT / "P14p3f_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p3f_run.log'}")
 log("\nPhase 14p3f complete.")

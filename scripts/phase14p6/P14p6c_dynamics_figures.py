@@ -14,7 +14,7 @@ Panel (f) AFR_DAF histogram per partition (does AFR_TMRCA capture different
 
 Output:
   results/phase14p6/P14p6c_evolutionary_dynamics.pdf|png
-  results/phase14p6/P14p6c_NARRATIVE.md
+  results/phase14p6/P14p6c_run.log
 """
 
 from pathlib import Path
@@ -158,15 +158,5 @@ plt.savefig(OUT / "P14p6c_evolutionary_dynamics.png", bbox_inches="tight", dpi=3
 print(f"Saved figures: {OUT / 'P14p6c_evolutionary_dynamics.pdf|png'}")
 
 # Narrative
-with open(OUT / "P14p6c_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p6c — Evolutionary dynamics figure\n\n")
-    f.write(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n\n")
-    f.write("## Panels\n\n")
-    f.write("- (a) AFR_DAF × AFR_TMRCA scatter, v10 cluster color\n")
-    f.write("- (b) AFR_TMRCA distribution per AFR partition\n")
-    f.write("- (c) |Akbari S| × AFR_TMRCA scatter by cluster\n")
-    f.write("- (d) mean χ² per AFR partition (h² proxy)\n")
-    f.write("- (e) AFR partition × v10 cluster cross-tab (%)\n")
-    f.write("- (f) AFR DAF distribution per AFR partition\n")
 
 print("Phase 14p6c complete.")

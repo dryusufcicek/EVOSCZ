@@ -39,7 +39,7 @@ Output:
   results/phase14p4/P14p4a_fisher_overlap.tsv
   results/phase14p4/P14p4a_direction_of_effect.tsv
   results/phase14p4/P14p4a_HLA_sensitivity.tsv
-  results/phase14p4/P14p4a_NARRATIVE.md
+  results/phase14p4/P14p4a_run.log
 """
 
 import sys
@@ -380,17 +380,9 @@ log(f"  T4: HLA-excluded |S| ratio retention = {retention:.1f}%  (threshold ≥8
 
 
 # ── Narrative ──────────────────────────────────────────────────────
-with open(OUT / "P14p4a_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p4a — Cluster × Akbari 2026 selection overlap\n\n")
-    f.write(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n\n")
-    f.write("## Pre-registered tests\n\n")
-    f.write("- T1 |S| distribution per cluster + perm null\n")
-    f.write("- T2 Fisher overlap with Akbari 452\n")
-    f.write("- T3 Direction-of-effect (pleiotropy direction)\n")
-    f.write("- T4 HLA exclusion sensitivity\n\n")
-    f.write("## Run log\n\n```\n")
-    f.write("\n".join(LOG))
-    f.write("\n```\n")
+with open(OUT / "P14p4a_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p4a_run.log'}")
 
-log(f"\nSaved: {OUT}/P14p4a_NARRATIVE.md")
+log(f"\nSaved: {OUT}/P14p4a_run.log")
 log("Phase 14p4a complete.")

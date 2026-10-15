@@ -14,7 +14,7 @@ Computes for k=1..8 in BOTH 3D and 2D feature spaces:
 Plus stability analysis: 100 bootstrap re-fits at the chosen k, report
 mean ARI (adjusted rand index) of cluster assignments vs reference.
 
-Output: results/phase14b/P14p_model_selection.tsv + .md narrative
+Output: results/phase14b/P14p_model_selection.tsv + run log
 """
 import warnings
 from datetime import datetime
@@ -186,8 +186,7 @@ for label, df in [("3D", df_3d), ("2D", df_2d)]:
     log(f"  Min Davies-Bouldin: k={int(df_k2plus.loc[df_k2plus['davies_bouldin'].idxmin(), 'k'])}")
 
 # Save log
-with open(OUT / "P14p_model_selection_log.md", "w") as f:
-    f.write("# Phase 14p: Comprehensive Model Selection\n\n```\n")
-    for line in LOG: f.write(line + "\n")
-    f.write("```\n")
+with open(OUT / "P14p_model_selection.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p_model_selection.log'}")
 log(f"\nDone — {datetime.now().strftime('%Y-%m-%d %H:%M')}")

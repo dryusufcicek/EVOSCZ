@@ -20,7 +20,7 @@ Tests included:
 
 Output:
   - results/phase13/P13b_maf_residualized_results.tsv
-  - results/phase13/P13b_NARRATIVE.md
+  - results/phase13/P13b_ANALYSIS_LOG.md
 """
 
 import sys

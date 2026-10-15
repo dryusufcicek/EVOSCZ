@@ -8,7 +8,7 @@ brain_spec × age test. Compare to PGC3 effect.
 
 Output:
   - results/phase13/P13e_neighbor_test_results.tsv
-  - results/phase13/P13e_NARRATIVE.md
+  - results/phase13/P13e_test_run.log
 """
 
 import sys
@@ -187,8 +187,7 @@ results = pd.DataFrame([
 results.to_csv(OUT / "P13e_neighbor_test_results.tsv", sep="\t", index=False)
 log(f"\n  Saved: {OUT / 'P13e_neighbor_test_results.tsv'}")
 
-with open(OUT / "P13e_NARRATIVE.md", "w") as f:
-    f.write("# Phase 13e: Neighbor Control Comparison\n\n```\n")
-    for line in LOG: f.write(line + "\n")
-    f.write("```\n")
+with open(OUT / "P13e_test_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P13e_test_run.log'}")
 log("\nPhase 13e_test complete.")

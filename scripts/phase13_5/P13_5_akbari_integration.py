@@ -18,7 +18,7 @@ Tests added (within-locus + MAF residualized):
 Output:
   results/phase11/variant_master_v3.parquet
   results/phase13_5/P13_5_akbari_results.tsv
-  results/phase13_5/P13_5_NARRATIVE.md
+  results/phase13_5/P13_5_run.log
 """
 
 import pandas as pd
@@ -197,7 +197,7 @@ matched["x_for_effect_allele"] = np.where(align_alt, matched["X"], -matched["X"]
 # Tie-breaker for duplicate (rsid, locus): primary FDR (lower = more significant),
 # secondary POSTERIOR (HIGHER = more confident in directional selection). Use a
 # negated POSTERIOR sort key with ascending=True so that ties on FDR resolve to
-# the higher-POSTERIOR record. (Verified by audit 2026-05-03.)
+# the higher-POSTERIOR record.
 matched["_neg_post"] = -matched["POSTERIOR"].fillna(-1)  # NaN treated as least confident
 matched = matched.sort_values(
     ["rsid", "FDR", "_neg_post"], na_position="last"
@@ -289,8 +289,7 @@ if len(df_r) > 0:
     df_r.to_csv(OUT / "P13_5_akbari_results.tsv", sep="\t", index=False)
     log(f"\n  Saved: {OUT / 'P13_5_akbari_results.tsv'}")
 
-with open(OUT / "P13_5_NARRATIVE.md", "w") as f:
-    f.write("# Phase 13.5: Akbari 2026 Ancient DNA Integration\n\n```\n")
-    for line in LOG: f.write(line + "\n")
-    f.write("```\n")
+with open(OUT / "P13_5_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P13_5_run.log'}")
 log("\nPhase 13.5 complete.")

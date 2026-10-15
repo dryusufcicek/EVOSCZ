@@ -26,7 +26,7 @@ Output (results/phase14p_baseline/):
   - P14p_c_maf_stratified_tests.tsv  — per MAF-decile distribution tests
   - P14p_d_cluster_stratified.tsv    — per cluster vs MAF-matched controls
   - P14p_e_density_pgc_vs_control.pdf
-  - P14p_NARRATIVE.md
+  - P14p_run.log
 """
 
 import sys
@@ -473,81 +473,10 @@ log(f"  saved → P14p_e_density_pgc_vs_control.pdf|png")
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Step 8: Narrative log
+# Step 8: Run log
 # ─────────────────────────────────────────────────────────────────────
-narrative_path = OUT / "P14p_NARRATIVE.md"
-narr = []
-narr.append(f"# Phase 14p — Baseline Age-Distribution Comparison\n")
-narr.append(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n")
-narr.append(f"**Closes:** AUDIT_REPORT.md Issue 8 (genome-wide age baseline)\n")
-narr.append(f"**Question:** Are PGC3 credible-set variants older/younger than MAF+L2-matched HapMap3 controls?\n\n")
-
-narr.append(f"## Inputs\n")
-narr.append(f"- PGC3 credible-set: `results/phase11/variant_master_v4.parquet` (n={len(vm):,})\n")
-narr.append(f"- Matched controls: `data/processed/matched_controls.tsv.gz` "
-            f"({controls['pgc3_rsid'].nunique():,} PGC3 → {controls['control_snp'].nunique():,} unique controls; "
-            f"{len(controls):,} mappings; mean {len(controls)/controls['pgc3_rsid'].nunique():.1f} controls/PGC3)\n")
-narr.append(f"- GEVA Atlas of Variant Age: `$ATLAS_DIR/atlas.chr*.csv.gz` "
-            f"(AgeMedian_Mut, DataSource='TGP')\n")
-narr.append(f"- Cluster assignments: `results/phase14b/P14b_v3_cluster_assignments.tsv.gz` "
-            f"(C0/C1/C2 from Phase 14b GMM)\n\n")
-
-narr.append(f"## Coverage\n")
-narr.append(f"- PGC3 with Atlas TGP age: {n_pgc_aged:,}/{len(pgc3_positions):,} "
-            f"({n_pgc_aged/len(pgc3_positions)*100:.1f}%)\n")
-narr.append(f"- Control with Atlas TGP age: {n_ctl_aged:,}/{len(ctrl_positions):,} "
-            f"({n_ctl_aged/len(ctrl_positions)*100:.1f}%)\n\n")
-
-narr.append(f"## Pooled distribution\n\n")
-narr.append(f"| Group | n | min | q01 | median | q99 | max | pct<50kyr |\n")
-narr.append(f"|---|---|---|---|---|---|---|---|\n")
-for row in summary_rows:
-    narr.append(f"| {row['group']} | {row['n']:,} | {row['min']:,.0f} | "
-                f"{row['q01']:,.0f} | {row['median']:,.0f} | {row['q99']:,.0f} | "
-                f"{row['max']:,.0f} | {row['pct_lt_50k']:.2f}% |\n")
-narr.append(f"\n**Mann-Whitney U:** P = {mwu_p:.3e}\n")
-narr.append(f"**Kolmogorov-Smirnov:** D = {ks_stat:.4f}, P = {ks_p:.3e}\n")
-narr.append(f"**Permutation (one control per PGC3, 10k iter, median diff):** P = {perm_p_median:.4f}\n")
-narr.append(f"**Permutation (one control per PGC3, 10k iter, pct<50k diff):** P = {perm_p_pct50:.4f}\n\n")
-
-narr.append(f"## MAF-decile stratified\n\n")
-narr.append(f"| Decile | MAF range | n_PGC | n_CTL | PGC median | CTL median | Δ | MWU P |\n")
-narr.append(f"|---|---|---|---|---|---|---|---|\n")
-for _, r in maf_df.iterrows():
-    narr.append(f"| {int(r['maf_decile'])} | {r['maf_lo']:.3f}–{r['maf_hi']:.3f} | "
-                f"{int(r['n_pgc']):,} | {int(r['n_ctl']):,} | "
-                f"{r['pgc_median_age']:,.0f} | {r['ctl_median_age']:,.0f} | "
-                f"{r['pgc_minus_ctl_median']:+,.0f} | {r['MWU_P']:.2e} |\n")
-
-narr.append(f"\n## Per-cluster vs MAF-matched controls\n\n")
-narr.append(f"| Cluster | n_PGC | PGC med | PGC %<50k | n_CTL | CTL med | CTL %<50k | Δ med | MWU P |\n")
-narr.append(f"|---|---|---|---|---|---|---|---|---|\n")
-for _, r in clu_df.iterrows():
-    narr.append(f"| {r['cluster']} | {int(r['n_pgc_cluster']):,} | "
-                f"{r['pgc_median_age']:,.0f} | {r['pgc_pct_lt_50k']:.2f}% | "
-                f"{int(r['n_cluster_matched_controls']):,} | "
-                f"{r['ctl_median_age']:,.0f} | {r['ctl_pct_lt_50k']:.2f}% | "
-                f"{r['pgc_minus_ctl_median']:+,.0f} | {r['MWU_P']:.2e} |\n")
-
-narr.append(f"\n## Interpretation\n\n")
-narr.append(f"- If pooled PGC3 median ≈ control median AND PGC3 %<50kyr ≈ control %<50kyr → ")
-narr.append(f"the 'narrow temporal window' claim in v10 is **ascertainment-driven**, not SCZ-specific.\n")
-narr.append(f"- If PGC3 is significantly younger after MAF stratification → SCZ-specific signal beyond ascertainment.\n")
-narr.append(f"- Per-cluster shifts (C0 younger than its MAF-matched controls?) test cluster-level claim.\n\n")
-
-narr.append(f"## Files\n")
-narr.append(f"- `P14p_a_age_lookup.parquet`           — per-rsid Atlas TGP age\n")
-narr.append(f"- `P14p_b_dist_summary.tsv`             — pooled distribution summary\n")
-narr.append(f"- `P14p_b_pooled_tests.tsv`             — pooled MWU/KS/permutation tests\n")
-narr.append(f"- `P14p_c_maf_stratified_tests.tsv`     — per-MAF-decile tests\n")
-narr.append(f"- `P14p_d_cluster_stratified.tsv`       — per-cluster vs MAF-matched controls\n")
-narr.append(f"- `P14p_e_density_pgc_vs_control.pdf`   — density + ECDF figure\n\n")
-
-narr.append(f"## Run log\n\n```\n")
-narr.extend(line + "\n" for line in LOG)
-narr.append("```\n")
-
-with open(narrative_path, "w") as f:
-    f.writelines(narr)
-log(f"\nWrote narrative: {narrative_path}")
+log_path = OUT / "P14p_run.log"
+with open(log_path, "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"\nWrote run log: {log_path}")
 log("\nPhase 14p complete.")

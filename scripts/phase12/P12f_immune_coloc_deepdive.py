@@ -13,7 +13,6 @@ Produces an annotated case-study table for manuscript Table 5.
 Output:
   - results/phase12/P12f_immune_coloc_variant_table.tsv (all variants in 16 loci)
   - results/phase12/P12f_locus_summary.tsv (one row per locus)
-  - results/phase12/P12f_NARRATIVE.md (vignette per locus)
 """
 
 import sys
@@ -141,63 +140,6 @@ for _, r in summary.iterrows():
         f"{r['n_in_desert']:>6d} {trait:<30s}")
 
 
-# ─── Section 3: Narrative vignette ─────────────────────────────────────────
-log("\n[Section 3] Per-locus narrative vignette")
-
-vignettes = []
-vignettes.append("# Phase 12f — SCZ-Immune Colocalization Variant-Level Vignettes\n")
-vignettes.append(f"**Date:** {datetime.now().strftime('%Y-%m-%d')}")
-vignettes.append("**Data:** 16 PGC3 credible sets with H4>0.8 SCZ-immune coloc, "
-                 "annotated with variant-level evolution + regulatory features.\n")
-vignettes.append("---\n")
-
-for _, r in summary.iterrows():
-    sub = locus_variants[locus_variants["credible_set_id"] == r["credible_set_id"]].copy()
-    cs_id = r["credible_set_id"]
-    gene = r['l2g_gene'] if pd.notna(r['l2g_gene']) else "—"
-    trait = r['immune_trait']
-    age = r['median_age_yr'] if pd.notna(r['median_age_yr']) else 0
-    n_var = r['n_variants_total']
-    H4 = r['max_H4']
-    spec = r['median_brain_specificity']
-
-    vignettes.append(f"## {cs_id} — {gene}: SCZ ↔ {trait}\n")
-    vignettes.append(f"- **Lead variant:** {r['lead_rsid']}, max H4 = {H4:.3f}")
-    vignettes.append(f"- **Median age:** {age:.0f} yr ({r['age_group']})")
-    vignettes.append(f"- **Credible set size:** {n_var} variants total")
-    vignettes.append(f"  - {r['n_with_brain_eqtl']} with GTEx brain eQTL")
-    vignettes.append(f"  - {r['n_with_blood_eqtl']} with GTEx blood eQTL")
-    vignettes.append(f"  - {r['n_with_both']} with both")
-    if pd.notna(spec):
-        if spec > 0.6:
-            spec_label = "BRAIN-DOMINANT"
-        elif spec < 0.4:
-            spec_label = "BLOOD-DOMINANT"
-        else:
-            spec_label = "balanced"
-        vignettes.append(f"  - Median brain specificity: {spec:.3f} ({spec_label})")
-    if r['n_in_desert'] > 0:
-        vignettes.append(f"- **Introgression desert:** {r['n_in_desert']} variants in tier 1/2/3")
-    if r['n_har_overlap'] > 0:
-        vignettes.append(f"- **HAR overlap:** {r['n_har_overlap']} variants")
-
-    # Top 3 variants by H4 or brain eQTL strength
-    top = sub.nsmallest(3, "gtex_brain_minp") if sub["gtex_brain_minp"].notna().any() else sub.head(3)
-    vignettes.append("- **Top eQTL variants in locus:**")
-    for _, v in top.iterrows():
-        bp = f"{v['gtex_brain_minp']:.1e}" if pd.notna(v.get('gtex_brain_minp')) else "NA"
-        bg = v.get('gtex_brain_gene', 'NA') or 'NA'
-        bt = v.get('gtex_brain_tissue', 'NA') or 'NA'
-        sds = f"{v['sds']:.2f}" if pd.notna(v.get('sds')) else "NA"
-        v_age = f"{v['age_median_yr']:.0f}" if pd.notna(v.get('age_median_yr')) else "NA"
-        vignettes.append(f"  - {v['rsid']}: age={v_age}, SDS={sds}, "
-                          f"brain_p={bp} ({bg}, {bt[:25] if isinstance(bt,str) else 'NA'})")
-
-    vignettes.append("")  # spacing
-
-with open(OUT / "P12f_NARRATIVE.md", "w") as f:
-    f.write("\n".join(vignettes))
-log(f"  Saved: {OUT / 'P12f_NARRATIVE.md'}")
 
 
 # ─── Section 4: Heterogeneity analysis ─────────────────────────────────────

@@ -18,7 +18,7 @@ Output:
   results/phase14b/P14b_effect_stratification.tsv
   results/phase14b/P14b_young_vs_old_profile.tsv
   results/phase14b/P14b_tissue_distribution.tsv
-  results/phase14b/P14b_NARRATIVE.md
+  results/phase14b/P14b_run.log
 """
 
 import sys
@@ -273,11 +273,7 @@ log(f"\n  Chi-square independence: chi2={chi2:.2f}, dof={dof}, p={p_chi2:.3e}")
 
 
 # Save log
-with open(OUT / "P14b_NARRATIVE.md", "w") as f:
-    f.write("# Phase 14b: PIP / Effect / Age Stratification\n\n")
-    f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-    f.write("```\n")
-    for line in LOG: f.write(line + "\n")
-    f.write("```\n")
-log(f"\nNarrative: {OUT / 'P14b_NARRATIVE.md'}")
+with open(OUT / "P14b_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14b_run.log'}")
 log("\nPhase 14b complete.")

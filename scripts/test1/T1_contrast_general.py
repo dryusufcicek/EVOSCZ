@@ -45,16 +45,13 @@ def main():
     def jk(col):
         return np.sqrt((n - 1) / n * np.sum((col - col.mean()) ** 2))
 
-    out = [f"# Between-cluster contrast — {Path(prefix).name} (n_clusters={ncl}, n_blocks={n})\n",
-           "| cluster | tau | tau_SE(.results) | tau_SE(jk) | Z |", "|---|---:|---:|---:|---:|"]
+    tau_rows = []
     for k in clusters:
         if k not in idx:
             continue
         v = clusters[k]; col = arr[:, idx[k]]
-        out.append(f"| {k} | {tau[v]:.4e} | {tause[v]:.4e} | {jk(col):.4e} | {tau[v]/tause[v]:+.2f} |")
-    out.append("\n## Pairwise contrasts Δ = tau_i − tau_j (paired block-jackknife)\n")
-    out.append("| contrast | Δtau | SE(Δ) | Z | P(2-sided) | interpretation |")
-    out.append("|---|---:|---:|---:|---:|---|")
+        tau_rows.append((k, tau[v], tause[v], jk(col), tau[v] / tause[v]))
+    pair_rows = []
     keys = [k for k in clusters if k in idx]
     for a in range(len(keys)):
         for b in range(a + 1, len(keys)):
@@ -63,13 +60,20 @@ def main():
             d = tau[clusters[ka]] - tau[clusters[kb]]
             se = jk(delta)
             z = d / se if se > 0 else float("nan")
-            p = erfc(abs(z) / sqrt(2))
-            interp = (f"{ka} NOT distinguishable from {kb} (n.s.)" if abs(z) < 1.96
-                      else f"{ka} {'>' if d > 0 else '<'} {kb} (sig)")
-            out.append(f"| {ka} − {kb} | {d:+.4e} | {se:.4e} | {z:+.2f} | {p:.3g} | {interp} |")
-    text = "\n".join(out)
-    print(text)
-    Path(prefix + "_contrast.md").write_text(text + "\n")
+            pair_rows.append((f"{ka}-{kb}", d, se, z, erfc(abs(z) / sqrt(2))))
+    with open(prefix + "_contrast_tau.tsv", "w") as f:
+        f.write("cluster\ttau\ttau_SE_results\ttau_SE_jackknife\tZ\tn_blocks\n")
+        for r in tau_rows:
+            f.write(f"{r[0]}\t{r[1]:.6e}\t{r[2]:.6e}\t{r[3]:.6e}\t{r[4]:+.4f}\t{n}\n")
+    with open(prefix + "_contrast_pairs.tsv", "w") as f:
+        f.write("contrast\tdelta_tau\tSE_delta\tZ\tP_two_sided\n")
+        for r in pair_rows:
+            f.write(f"{r[0]}\t{r[1]:+.6e}\t{r[2]:.6e}\t{r[3]:+.4f}\t{r[4]:.4g}\n")
+    print(f"{Path(prefix).name}: n_clusters={ncl}, n_blocks={n}")
+    for r in tau_rows:
+        print(f"{r[0]}\ttau={r[1]:.4e}\tSE={r[2]:.4e}\tSE_jk={r[3]:.4e}\tZ={r[4]:+.2f}")
+    for r in pair_rows:
+        print(f"{r[0]}\tdelta={r[1]:+.4e}\tSE={r[2]:.4e}\tZ={r[3]:+.2f}\tP={r[4]:.3g}")
     print("\nCONTRAST_DONE")
 
 

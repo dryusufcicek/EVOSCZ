@@ -45,36 +45,31 @@ def main():
     n = arr.shape[0]
     idx = {k: cats.index(v) for k, v in CLUST.items()}
     # self-check each cluster's jackknife SE vs .results
-    out = ["# Robustness check 1 — formal between-cluster coefficient contrast (joint model M0)\n",
-           f"n_blocks={n}; tau (conditional coefficient) per cluster:\n",
-           "| cluster | tau | tau_SE(.results) | tau_SE(jackknife) | Z |",
-           "|---|---:|---:|---:|---:|"]
+    from math import erfc, sqrt
+    tau_rows = []
     for k, v in CLUST.items():
         col = arr[:, idx[k]]
-        se_jk = jk_se(col, n)
-        out.append(f"| {k} | {tau[v]:.4e} | {tause[v]:.4e} | {se_jk:.4e} | {tau[v]/tause[v]:+.2f} |")
-    out.append("\n## Pairwise contrasts  Δ = tau_i − tau_j  (paired block-jackknife SE)\n")
-    out.append("| contrast | Δtau | SE(Δ) | Z | P(2-sided) | interpretation |")
-    out.append("|---|---:|---:|---:|---:|---|")
-    from math import erfc, sqrt
-    pairs = [("C0", "C2"), ("C0", "C1"), ("C1", "C2")]
-    for a, b in pairs:
-        ca, cb = arr[:, idx[a]], arr[:, idx[b]]
-        delta = ca - cb
+        tau_rows.append((k, tau[v], tause[v], jk_se(col, n), tau[v] / tause[v]))
+    pair_rows = []
+    for a, b in [("C0", "C2"), ("C0", "C1"), ("C1", "C2")]:
+        delta = arr[:, idx[a]] - arr[:, idx[b]]
         d = tau[CLUST[a]] - tau[CLUST[b]]
         se = jk_se(delta, n)
         z = d / se if se > 0 else float("nan")
-        p = erfc(abs(z) / sqrt(2))
-        if abs(z) < 1.96:
-            interp = f"{a} NOT distinguishable from {b} (n.s.)"
-        else:
-            interp = f"{a} {'>' if d > 0 else '<'} {b} (significant)"
-        out.append(f"| {a} − {b} | {d:+.4e} | {se:.4e} | {z:+.2f} | {p:.3g} | {interp} |")
-    out.append("\n_Concern 1 headline: is C0 (Young) significantly > C2 (Old)? See C0−C2 row. "
-               "Note C0 vs C1 (C1 had higher Z) reported honestly._\n")
-    text = "\n".join(out)
-    print(text)
-    (RES / "T1_cluster_contrast.md").write_text(text)
+        pair_rows.append((f"{a}-{b}", d, se, z, erfc(abs(z) / sqrt(2))))
+    with open(RES / "T1_cluster_contrast_tau.tsv", "w") as f:
+        f.write("cluster\ttau\ttau_SE_results\ttau_SE_jackknife\tZ\tn_blocks\n")
+        for r in tau_rows:
+            f.write(f"{r[0]}\t{r[1]:.6e}\t{r[2]:.6e}\t{r[3]:.6e}\t{r[4]:+.4f}\t{n}\n")
+    with open(RES / "T1_cluster_contrast_pairs.tsv", "w") as f:
+        f.write("contrast\tdelta_tau\tSE_delta\tZ\tP_two_sided\n")
+        for r in pair_rows:
+            f.write(f"{r[0]}\t{r[1]:+.6e}\t{r[2]:.6e}\t{r[3]:+.4f}\t{r[4]:.4g}\n")
+    print(f"joint model {M0}; n_blocks={n}")
+    for r in tau_rows:
+        print(f"{r[0]}\ttau={r[1]:.4e}\tSE={r[2]:.4e}\tSE_jk={r[3]:.4e}\tZ={r[4]:+.2f}")
+    for r in pair_rows:
+        print(f"{r[0]}\tdelta={r[1]:+.4e}\tSE={r[2]:.4e}\tZ={r[3]:+.2f}\tP={r[4]:.3g}")
     print("\nCONTRAST_DONE")
 
 

@@ -15,7 +15,7 @@ Output:
   results/phase14b/P14b_v2_continuous_gradient.tsv
   results/phase14b/P14b_v2_quartile_profiles.tsv
   results/phase14b/P14b_v2_mixture_model.tsv
-  results/phase14b/P14b_v2_NARRATIVE.md
+  results/phase14b/P14b_v2_run.log
 """
 
 import pandas as pd
@@ -253,11 +253,7 @@ log("""
     allele age rather than partitioning into discrete classes.'
 """)
 
-with open(OUT / "P14b_v2_NARRATIVE.md", "w") as f:
-    f.write("# Phase 14b v2: Continuous Gradient (Honest Methodology)\n\n")
-    f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-    f.write("```\n")
-    for line in LOG: f.write(line + "\n")
-    f.write("```\n")
-log(f"\nNarrative: {OUT / 'P14b_v2_NARRATIVE.md'}")
+with open(OUT / "P14b_v2_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14b_v2_run.log'}")
 log("\nPhase 14b v2 complete.")

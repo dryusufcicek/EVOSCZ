@@ -18,7 +18,7 @@ Pre-registered:
 
 Output:
   results/phase14p3/P14p3g_bootstrap_CI.tsv
-  results/phase14p3/P14p3g_NARRATIVE.md
+  results/phase14p3/P14p3g_run.log
 """
 
 from pathlib import Path
@@ -123,9 +123,7 @@ elif ks_lo > 0.10:
 else:
     log("   VERDICT: H4 weakened by bootstrap CI")
 
-with open(OUT / "P14p3g_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p3g — Block-bootstrap CI\n\n")
-    f.write(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n\n## Run log\n\n```\n")
-    f.write("\n".join(LOG))
-    f.write("\n```\n")
+with open(OUT / "P14p3g_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p3g_run.log'}")
 log("\nPhase 14p3g complete.")

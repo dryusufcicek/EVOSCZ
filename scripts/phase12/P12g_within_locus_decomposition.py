@@ -11,7 +11,7 @@ Implemented in `_within_locus_lib.within_locus_partial_rank_correlation`.
 
 Output:
   - results/phase12/P12g_decomposition_results.tsv (raw / within / between)
-  - results/phase12/P12g_NARRATIVE.md
+  - results/phase12/P12g_run.log
 """
 import sys
 from pathlib import Path
@@ -139,35 +139,8 @@ df = pd.DataFrame(results)
 df.to_csv(OUT / "P12g_decomposition_results.tsv", sep="\t", index=False)
 log(f"\nSaved: {OUT / 'P12g_decomposition_results.tsv'}")
 
-# Narrative — re-emit on rerun, refer to current numbers
-spec_r = next((r for r in results if r["test"] == "Brain specificity × age" and r["dataset"] == "all"), None)
-spec_no = next((r for r in results if r["test"] == "Brain specificity × age (no 17q21.31)"), None)
-brain_r = next((r for r in results if r["test"] == "Brain eQTL × age" and r["dataset"] == "all"), None)
-brain_no = next((r for r in results if r["test"] == "Brain eQTL × age (no 17q21.31)"), None)
-with open(OUT / "P12g_NARRATIVE.md", "w") as f:
-    f.write("# Phase 12g v2: Within/Between-Locus Decomposition (code-review-corrected)\n\n")
-    f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-    f.write("## Methodology\n\nWithin-group partial rank correlation: each variant's covariate is\n")
-    f.write("converted to a within-locus rank (average method); ranks are then\n")
-    f.write("centered on the locus mean rank and pooled across loci; Pearson\n")
-    f.write("correlation on pooled centered ranks gives the within-locus partial\n")
-    f.write("Spearman ρ. Between-locus is Spearman across locus medians.\n\n")
-    if brain_r:
-        f.write("## Brain eQTL × Age\n\n| Component | n | ρ | p |\n|---|---|---|---|\n")
-        f.write(f"| Raw | {brain_r['n_raw']} | {brain_r['rho_raw']:.4f} | {brain_r['p_raw']:.2e} |\n")
-        f.write(f"| Within-locus (rank) | {brain_r['n_pooled_within']} (n_loci={brain_r['n_loci_within']}) | {brain_r['rho_within']:.4f} | {brain_r['p_within']:.2e} |\n")
-        f.write(f"| Between-locus | {brain_r['n_loci_between']} | {brain_r['rho_between']:.4f} | {brain_r['p_between']:.2e} |\n")
-        if brain_no:
-            f.write(f"| Within-locus excl 17q21.31 | {brain_no['n_pooled_within']} | {brain_no['rho_within']:.4f} | {brain_no['p_within']:.2e} |\n")
-        f.write("\n")
-    if spec_r:
-        f.write("## Brain Specificity × Age (PRIMARY WITHIN-LOCUS FINDING)\n\n| Component | n | ρ | p |\n|---|---|---|---|\n")
-        f.write(f"| Raw | {spec_r['n_raw']} | {spec_r['rho_raw']:.4f} | {spec_r['p_raw']:.2e} |\n")
-        f.write(f"| Within-locus (rank) | {spec_r['n_pooled_within']} (n_loci={spec_r['n_loci_within']}) | {spec_r['rho_within']:.4f} | {spec_r['p_within']:.2e} |\n")
-        f.write(f"| Between-locus | {spec_r['n_loci_between']} | {spec_r['rho_between']:.4f} | {spec_r['p_between']:.2e} |\n")
-        if spec_no:
-            f.write(f"| Within-locus excl 17q21.31 | {spec_no['n_pooled_within']} | {spec_no['rho_within']:.4f} | {spec_no['p_within']:.2e} |\n")
-        f.write("\n")
-
-log(f"Narrative saved: {OUT / 'P12g_NARRATIVE.md'}")
+# Run log
+with open(OUT / "P12g_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log saved: {OUT / 'P12g_run.log'}")
 log("\nPhase 12g v2 complete.")

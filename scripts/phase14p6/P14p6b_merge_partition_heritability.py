@@ -29,7 +29,7 @@ Output:
   results/phase14p6/P14p6b_h2_proxy_per_partition_EUR.tsv
   results/phase14p6/P14p6b_h2_proxy_per_partition_AFRAM.tsv
   results/phase14p6/P14p6b_AFR_partition_x_v10_cluster.tsv
-  results/phase14p6/P14p6b_NARRATIVE.md
+  results/phase14p6/P14p6b_run.log
 """
 
 from pathlib import Path
@@ -280,16 +280,8 @@ log("\n  Same, as %s within cluster:")
 log(ct_pct.round(1).to_string())
 
 # ── Narrative ──────────────────────────────────────────────────────
-with open(OUT / "P14p6b_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p6b — AFR-TMRCA merge, partition, h² proxy\n\n")
-    f.write(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n\n")
-    f.write("## Method (proper)\n\n")
-    f.write("- AFR-context TMRCA = MRCA of AFR sample descendants of the allele-matched mutation(s) in Wohns 2022 unified tree\n")
-    f.write("- AFR_absent: variant has zero AFR-clade carriers (likely post-OOA EUR-derived)\n")
-    f.write("- Partitions defined by TMRCA threshold bins (data-driven, no AMH/Crow labels)\n")
-    f.write("- h² PROXY: sumstats-based mean χ² per partition (not formal s-LDSC)\n\n")
-    f.write("## Run log\n\n```\n")
-    f.write("\n".join(LOG))
-    f.write("\n```\n")
+with open(OUT / "P14p6b_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p6b_run.log'}")
 
 log("\nPhase 14p6b complete.")

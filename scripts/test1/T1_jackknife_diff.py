@@ -100,35 +100,27 @@ def main():
         print("ABORT: could not self-verify M0 tau delete-values; "
               "fall back to tau±SE overlap in T1_SUMMARY."); sys.exit(2)
 
-    out = ["\n# Delta tau_C0 paired block-jackknife (Fix-3)\n",
-           f"M0={m0}: tau_C0={tau0:.4e}, n_blocks={n0}\n",
-           "| age model | tau_C0(age) | Delta tau | SE(Delta) | Z(Delta) | interpretation |",
-           "|---|---:|---:|---:|---:|---|"]
+    rows = []
     for mage in sys.argv[2:]:
         _, infoA = results_rows(mage)
         if C0 not in infoA:
-            out.append(f"| {mage} | MISSING | | | | |"); continue
+            rows.append((mage, "NA", "NA", "NA", "NA", "C0 missing in .results")); continue
         tauA = infoA[C0][0]
         colA, nA = c0_delete_vector(mage)
         if colA is None or nA != n0:
-            out.append(f"| {mage} | {tauA:.4e} | (no paired delete) | | | tau±SE only |"); continue
+            rows.append((mage, f"{tauA:.6e}", "NA", "NA", "NA", "no paired delete-values")); continue
         delta = colA - col0
         dtau = tauA - tau0
         se = jk_se(delta, n0)
         z = dtau / se if se > 0 else float("nan")
-        # interpret: significant negative Delta => age absorbs C0; n.s. => C0 stable
-        if abs(z) < 1.96:
-            interp = "Delta n.s. -> tau_C0 STABLE (C0 beyond age)"
-        elif dtau < 0:
-            interp = "Delta<0 sig -> age SIGNIFICANTLY attenuates C0"
-        else:
-            interp = "Delta>0 sig -> C0 strengthens with age cond."
-        out.append(f"| {mage} | {tauA:.4e} | {dtau:+.4e} | {se:.4e} | {z:+.2f} | {interp} |")
-
-    text = "\n".join(out)
-    print(text)
-    with open(RES / "T1_jackknife_diff.md", "w") as f:
-        f.write(text + "\n")
+        rows.append((mage, f"{tauA:.6e}", f"{dtau:+.6e}", f"{se:.6e}", f"{z:+.4f}", ""))
+    with open(RES / "T1_jackknife_diff.tsv", "w") as f:
+        f.write("age_model\ttau_C0_age\tdelta_tau\tSE_delta\tZ_delta\tnote\n")
+        for r in rows:
+            f.write("\t".join(r) + "\n")
+    print(f"M0={m0}: tau_C0={tau0:.4e}, n_blocks={n0}")
+    for r in rows:
+        print("\t".join(r))
     print("\nJACKKNIFE_DIFF_DONE")
 
 

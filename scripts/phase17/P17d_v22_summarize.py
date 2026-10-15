@@ -3,8 +3,7 @@
 
 Reads results/phase17d_v22/perm_summary_v22.tsv (produced by run_perms.sh)
 and computes null mean ± SD, null max, and observed-Z position relative
-to the null. Writes a Markdown summary suitable for direct use in
-SupplementaryMethods_NatGen_v22.md §E3 and Supp Table 20 update.
+to the null. Writes a one-row summary table (null_summary_v22.tsv).
 """
 
 import pandas as pd
@@ -46,36 +45,11 @@ print(f"Observed C0 Z v22 : +{OBSERVED_Z_V22:.2f}")
 print(f"Controls Z ≥ obs  : {n_exceed}/{n}")
 print(f"Position          : observed Z is {(OBSERVED_Z_V22 - mean_z)/sd_z:.2f} SD above null mean")
 
-md = OUT / "null_summary_v22.md"
-with open(md, "w") as f:
-    f.write(f"# Supplementary Table 20 v22 — Empirical matched-LD-MAF permutation null\n\n")
-    f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-    f.write(f"Baseline-LD model: v2.2 (Gazal 2017; 97 annotations)\n")
-    f.write(f"N permutations: {n}\n")
-    f.write(f"Observed C0 conditional Z (primary v22 PGC3 EUR SCZ): **+{OBSERVED_Z_V22:.2f}**\n\n")
-    f.write("## Null distribution\n\n")
-    f.write(f"- Null mean Z ± SD: **{mean_z:+.2f} ± {sd_z:.2f}**\n")
-    f.write(f"- Null Z range: [{min_z:+.2f}, {max_z:+.2f}]\n")
-    f.write(f"- Null enrichment mean ± SD: **{mean_enr:+.2f}× ± {sd_enr:.2f}**\n")
-    f.write(f"- Controls reaching observed Z ≥ +{OBSERVED_Z_V22:.2f}: **{n_exceed}/{n}**\n")
-    f.write(f"- Position: observed Z is {(OBSERVED_Z_V22 - mean_z)/sd_z:.2f} SD above null mean\n\n")
-    f.write("## Per-permutation table\n\n")
-    f.write("| perm | Prop_SNPs | Prop_h² | Enrichment | s.e. | P | Z |\n")
-    f.write("|---|---|---|---|---|---|---|\n")
-    for _, r in df.iterrows():
-        f.write(f"| {int(r['perm'])} | {r['Prop_SNPs']:.6f} | {r['Prop_h2']:.5f} | "
-                f"{r['Enrichment']:+.2f}× | {r['Enrichment_se']:.2f} | "
-                f"{r['Enrichment_P']:.3f} | {r['Z']:+.2f} |\n")
-    f.write("\n## Interpretation\n\n")
-    if n_exceed == 0:
-        f.write(f"The observed C0 conditional *Z* = +{OBSERVED_Z_V22:.2f} lies outside the "
-                f"matched-LD-MAF empirical null distribution under baseline-LD v2.2 "
-                f"({n_exceed}/{n} controls reached the observed Z; null mean {mean_z:+.2f} ± {sd_z:.2f}). "
-                f"This confirms the v1.2-based proportional-scaling projection reported in the "
-                f"prior pending state of this table.\n")
-    else:
-        f.write(f"WARNING: {n_exceed}/{n} control annotations reached or exceeded the observed Z. "
-                f"Empirical *P* = {(n_exceed + 1)/(n + 1):.3f}. Review individual permutations.\n")
+summary = OUT / "null_summary_v22.tsv"
+with open(summary, "w") as f:
+    f.write("n_perm\tnull_Z_mean\tnull_Z_sd\tnull_Z_min\tnull_Z_max\tnull_enrichment_mean\tnull_enrichment_sd\t"
+            "observed_Z\tn_controls_Z_ge_observed\tobserved_minus_null_mean_in_SD\tempirical_P\n")
+    f.write(f"{n}\t{mean_z:.6f}\t{sd_z:.6f}\t{min_z:.6f}\t{max_z:.6f}\t{mean_enr:.6f}\t{sd_enr:.6f}\t"
+            f"{OBSERVED_Z_V22:.2f}\t{n_exceed}\t{(OBSERVED_Z_V22 - mean_z) / sd_z:.6f}\t{(n_exceed + 1) / (n + 1):.6f}\n")
 
-print(f"\nMarkdown summary: {md}")
-print("Outputs written; use these to populate the permutation-null supplementary table.")
+print(f"\nSummary table: {summary}")

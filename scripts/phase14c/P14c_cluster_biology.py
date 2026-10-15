@@ -15,7 +15,7 @@ Output:
   results/phase14c/P14c_cluster_pathway_enrichment.tsv
   results/phase14c/P14c_brain_region_distribution.tsv
   results/phase14c/P14c_cluster_string_network.tsv
-  results/phase14c/P14c_NARRATIVE.md
+  results/phase14c/P14c_run.log
 """
 
 import pandas as pd
@@ -226,11 +226,7 @@ if string_results:
 
 
 # Save log
-with open(OUT / "P14c_NARRATIVE.md", "w") as f:
-    f.write("# Phase 14c: Per-Cluster Biology\n\n")
-    f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-    f.write("```\n")
-    for line in LOG: f.write(line + "\n")
-    f.write("```\n")
-log(f"\nNarrative: {OUT / 'P14c_NARRATIVE.md'}")
+with open(OUT / "P14c_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14c_run.log'}")
 log("\nPhase 14c complete.")

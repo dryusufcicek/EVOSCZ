@@ -15,7 +15,7 @@ Akbari index but is in the same selection-relevant locus.
 
 Output:
   results/phase14p4/P14p4b_window_overlap_per_cluster.tsv
-  results/phase14p4/P14p4b_NARRATIVE.md
+  results/phase14p4/P14p4b_run.log
 """
 
 from pathlib import Path
@@ -106,8 +106,7 @@ out = pd.DataFrame(rows)
 out.to_csv(OUT / "P14p4b_window_overlap_per_cluster.tsv", sep="\t", index=False)
 log("\n" + out.to_string(index=False))
 
-with open(OUT / "P14p4b_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p4b — Window overlap per cluster\n\n## Run log\n\n```\n")
-    f.write("\n".join(LOG))
-    f.write("\n```\n")
+with open(OUT / "P14p4b_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p4b_run.log'}")
 log("\nPhase 14p4b complete.")

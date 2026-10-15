@@ -26,7 +26,7 @@ SCRIPT auto-detects xlsx files in the bigdeli2026/ directory and tries each.
 OUTPUT
 ------
 - results/phase19_local/P19r_bigdeli_replication.tsv
-- results/phase19_local/P19r_bigdeli_summary.md
+- results/phase19_local/P19r_bigdeli_metrics.tsv
 
 USAGE
 -----
@@ -49,7 +49,7 @@ MASTER = BASE / "data/processed/pgc3_master_variants.tsv"
 BIGDELI_DIR = BASE / "data/bigdeli2026"
 OUT_DIR = BASE / "results/phase19_local"
 OUT_TSV = OUT_DIR / "P19r_bigdeli_replication.tsv"
-OUT_MD = OUT_DIR / "P19r_bigdeli_summary.md"
+OUT_MD = OUT_DIR / "P19r_bigdeli_metrics.tsv"
 
 
 def log(msg=""):
@@ -331,30 +331,17 @@ def main():
     merged.to_csv(OUT_TSV, sep="\t", index=False)
     log(f"\nWrote per-variant detail: {OUT_TSV}")
 
-    # Markdown summary
+    # Metrics table
     with open(OUT_MD, "w") as fh:
-        fh.write("# Phase 19r — Bigdeli 2026 AFR-discovery replication\n\n")
-        fh.write(f"**Date:** 2026-05-16\n\n")
-        fh.write(f"## Bigdeli source\n")
-        fh.write(f"Files used: {[f.name for f in bigdeli_files]}\n")
-        fh.write(f"Sheet selected: `{sheet_name}` ({len(parsed):,} rows)\n\n")
-        fh.write(f"## Lookup\n")
-        fh.write(f"- Phase 19 EUR-amplified leads: 32\n")
-        fh.write(f"- Matched in Bigdeli AFR sumstats: {n_match}\n\n")
-        fh.write(f"## Metrics\n")
+        fh.write("metric\tvalue\n")
+        fh.write(f"bigdeli_files\t{';'.join(x.name for x in bigdeli_files)}\n")
+        fh.write(f"sheet_selected\t{sheet_name}\n")
+        fh.write(f"n_rows_parsed\t{len(parsed)}\n")
+        fh.write("n_eur_amplified_leads\t32\n")
+        fh.write(f"n_matched_in_afr\t{n_match}\n")
         for k, v in metrics.items():
-            fh.write(f"- **{k}**: {v}\n")
-        fh.write("\n")
-        fh.write(f"## Tier decision criterion\n")
-        if "concordance" in metrics and not np.isnan(metrics["concordance"]):
-            c = metrics["concordance"]
-            if c >= 0.80:
-                fh.write(f"Concordance {c:.2%} ≥ 80% → **Mol Psychiatry primary target**\n")
-            elif c >= 0.65:
-                fh.write(f"Concordance {c:.2%} in [0.65, 0.80) → **AJHG primary target** (more conservative)\n")
-            else:
-                fh.write(f"Concordance {c:.2%} < 65% → **Revise narrative**; H4 winner's curse may dominate\n")
-    log(f"Wrote summary: {OUT_MD}")
+            fh.write(f"{k}\t{v}\n")
+    log(f"Wrote metrics table: {OUT_MD}")
     log("\nPhase 19r complete.")
 
 

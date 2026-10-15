@@ -30,7 +30,7 @@ Output:
   results/phase14p3/P14p3c_pairwise_KS_MWU.tsv
   results/phase14p3/P14p3c_permutation_null.tsv
   results/phase14p3/P14p3c_matched_control_benchmark.tsv
-  results/phase14p3/P14p3c_NARRATIVE.md
+  results/phase14p3/P14p3c_run.log
 """
 
 import sys
@@ -199,12 +199,11 @@ mc_path = BASE / "results/phase14p_baseline/P14p_a_age_lookup.parquet"
 if mc_path.exists():
     mc = pd.read_parquet(mc_path)
     log(f"  Phase 14p matched-control age table: {len(mc):,}")
-    # We need pure-AFR DAF for the matched controls — same harmonization
-    # pipeline. For now, we report a placeholder: matched-control
-    # pure-AFR DAF computation deferred to P14p3d sensitivity step
-    # (requires bcftools extract for ~686k control SNPs — large I/O).
+    # The matched-control pure-AFR DAF needs the same harmonisation pipeline
+    # (a bcftools extract over ~686k control SNPs); it is computed in the
+    # P14p3d sensitivity step. This row only records the deferral.
     log("  NOTE: matched-control AFR DAF requires a separate bcftools extract;")
-    log("        deferred to P14p3d sensitivity. Reporting placeholder here.")
+    log("        computed in P14p3d. This row records the deferral.")
     benchmark_rows = [{
         "comparator": "C0_vs_matched_controls",
         "status": "deferred_to_p14p3d_sensitivity",
@@ -236,11 +235,7 @@ else:
     log("  G1 VERDICT: H4 PARTIAL — proceed to MAF-stratified sensitivity (P14p3d)")
 
 # Save narrative
-with open(OUT / "P14p3c_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p3c — Primary cluster × pure-AFR DAF tests\n\n")
-    f.write(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n\n")
-    f.write("## Run log\n\n```\n")
-    f.write("\n".join(LOG))
-    f.write("\n```\n")
-log(f"\nSaved: {OUT}/P14p3c_NARRATIVE.md")
+with open(OUT / "P14p3c_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p3c_run.log'}")
 log("Phase 14p3c complete.")

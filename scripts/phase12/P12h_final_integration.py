@@ -9,7 +9,7 @@ involving constraint and iHS.
 Output:
   - results/phase11/variant_master_v2.parquet (clean dedup + all annotations)
   - results/phase12/P12h_final_results.tsv
-  - results/phase12/P12h_FINAL_NARRATIVE.md
+  - results/phase12/P12h_run.log
 """
 
 import sys
@@ -125,11 +125,7 @@ if results:
     log(f"\nSaved: {P12 / 'P12h_final_results.tsv'}")
 
 # Save log
-with open(P12 / "P12h_FINAL_NARRATIVE.md", "w") as f:
-    f.write("# Phase 12h: Final Integration & Within-Locus Tests\n\n")
-    f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-    f.write("```\n")
-    for line in LOG:
-        f.write(line + "\n")
-    f.write("```\n")
+with open(P12 / "P12h_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {P12 / 'P12h_run.log'}")
 log("\nPhase 12h complete.")

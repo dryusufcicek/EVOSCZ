@@ -170,7 +170,6 @@ def is_ambiguous(a1: str, a2: str) -> bool:
 def make_join_key(chrom, pos, a1, a2) -> str:
     """Allele-orientation-insensitive key: chr:pos:sorted(A1,A2).
     Returns '' if chrom/pos is NA (row drops out of joins as intended).
-    Fix per code review BLOCKER #2.
     """
     if pd.isna(chrom) or pd.isna(pos):
         return ""
@@ -212,7 +211,7 @@ def polarity_for_variant(eur_a1: str, eur_a2: str, eur_beta: float,
                               would NOT produce the same answer as Form 1 if
                               Form 1 had a sign-branch bug.
 
-    Fix per P0 audit BLOCKER #4 (Form 2 was not actually independent before).
+    Form 2 is computed independently of Form 1 (an earlier version shared its sign branch).
 
     Inputs:
       eur_a1, eur_a2 : effect / non-effect allele in PGC3 EUR sumstats
@@ -710,7 +709,7 @@ def load_1000g_eur_af(eur_master: pd.DataFrame) -> pd.DataFrame:
 
     if not frames:
         log("  WARNING: no 1000G EUR data loaded — AF_EUR_A1 will fall back to "
-            "master.maf (UNRELIABLE per audit).")
+            "master.maf (unreliable: reflected MAF, see attach_af_eur_1000g).")
         return pd.DataFrame(columns=["chr", "pos_grch37", "rsid",
                                       "PLINK_REF", "PLINK_ALT", "AF_EUR_ALT"])
 
@@ -725,12 +724,12 @@ def load_1000g_eur_af(eur_master: pd.DataFrame) -> pd.DataFrame:
 
 def attach_af_eur_1000g(eur: pd.DataFrame, eur1k: pd.DataFrame) -> pd.DataFrame:
     """Orient 1000G PLINK ALT/REF to PGC3 EUR_A1; REPLACE master.maf-derived
-    AF_EUR_A1 with 1000G-derived value. Keep master.maf as audit column.
+    AF_EUR_A1 with 1000G-derived value. Keep master.maf as a reference column.
     Falls back to master.maf for variants without 1000G match (with caveat).
     """
     log("Joining PGC3 master <-> 1000G EUR (canonical AF_EUR_A1 source)")
 
-    # Keep master.maf for audit BEFORE we replace AF_EUR_A1
+    # Keep master.maf for reference BEFORE we replace AF_EUR_A1
     eur = eur.copy()
     eur["AF_EUR_master_maf_audit"] = eur["AF_EUR_A1"]
 
@@ -796,7 +795,6 @@ def attach_af_eur_1000g(eur: pd.DataFrame, eur1k: pd.DataFrame) -> pd.DataFrame:
 
 # ============================================================================
 # P0.4 — VERIFY master.maf is interpretable as AF(A1)
-#        (BLOCKER #1 fix per PHASE19_SCRIPT_AUDIT)
 #        NOTE: Job 5783157 revealed master.maf is reflected MAF (r=-0.49).
 #        This function is RETAINED but no longer called from main() — AF_EUR_A1
 #        is now sourced directly from 1000G EUR plink. Kept for reference.
@@ -819,7 +817,7 @@ def verify_af_eur_orientation(df: pd.DataFrame, n_sample: int = 200) -> None:
     If r >= 0.95: PASS, log, proceed with master.maf as AF(A1).
     """
     log("=" * 78)
-    log("P0.4 verification: master.maf vs 1000G EUR AF(A1) (BLOCKER #1 gate)")
+    log("P0.4 verification: master.maf vs 1000G EUR AF(A1)")
     log("=" * 78)
 
     candidates = df[df["AF_EUR_A1"].notna()
@@ -1124,7 +1122,7 @@ def assign_strata(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[~valid, "AF_AFR_stratum"] = "unresolved"
 
     # |BETA| tertile (within polarity-resolved set)
-    # Fix per code review BLOCKER #1: initialize column unconditionally so
+    # Initialise the column unconditionally so
     # the .fillna().astype(str) at the end never hits KeyError on degenerate
     # runs (pol.sum() <= 30).
     abs_beta = df["EUR_BETA"].abs()
@@ -1226,7 +1224,7 @@ def permutation_null_merged(df_pol: pd.DataFrame, merged_strata: list,
                             n_perm: int = N_PERM) -> float:
     """
     Permutation null over a MERGED stratum (union of sub-bin labels).
-    Fix per P0 audit BLOCKER #3 / code review HIGH #1.
+    The merged-stratum null replaces the earlier per-bin null.
 
     Resamples n_target rows without replacement from the full polarity-resolved
     pool, recomputes D, compares against d_obs(merged_strata). Phipson-Smyth
@@ -1353,8 +1351,8 @@ def main():
     eur     = load_pgc3_master()
 
     # CANONICAL AF_EUR_A1 from 1000G EUR plink (n=503).
-    # Replaces master.maf which is reflected MAF (r=-0.49, audit confirmed
-    # in job 5783157 verification). See load_1000g_eur_af + attach_af_eur_1000g.
+    # Replaces master.maf, which is a reflected MAF (r = -0.49 against 1000G EUR,
+    # checked in job 5783157). See load_1000g_eur_af + attach_af_eur_1000g.
     eur1k   = load_1000g_eur_af(eur)
     eur     = attach_af_eur_1000g(eur, eur1k)
     del eur1k
@@ -1433,7 +1431,7 @@ def main():
         HLA_status="included", MAPT_status="included",
         LD_prune_status="all",
     ))
-    # Permutation null for primary — uses MERGED stratum (P0 audit BLOCKER #3)
+    # Permutation null for primary — uses MERGED stratum
     primary_row["p_perm"] = permutation_null_merged(
         df, ["lt_0.01", "0.01_0.05"]
     )

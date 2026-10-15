@@ -11,10 +11,10 @@ Addresses 5 robustness issues:
 
 Output:
   results/phase14a/P14a_combined_fdr.tsv
-  results/phase14a/P14a_primary_tests_bonferroni.md
+  results/phase14a/P14a_primary_tests_bonferroni.tsv
   results/phase14a/P14a_akbari_pass_robustness.tsv
   results/phase14a/P14a_brain_power_asymmetry.tsv
-  results/phase14a/P14a_NARRATIVE.md
+  results/phase14a/P14a_run.log
 """
 
 import pandas as pd
@@ -151,15 +151,8 @@ primary_data = df_r[df_r["test"].isin(primary_tests)].copy()
 primary_data["bonferroni_3"] = (primary_data["p"] * 3).clip(upper=1.0)
 primary_data["passes_bonf3"] = primary_data["bonferroni_3"] < 0.05
 
-with open(OUT / "P14a_primary_tests_bonferroni.md", "w") as f:
-    f.write("# Phase 14a-#2: Primary Tests Bonferroni-3\n\n")
-    f.write("Pre-defined primary tests (n=3) for stringent Bonferroni correction.\n")
-    f.write("All 3 represent ORTHOGONAL biological inferences:\n\n")
-    f.write("| Test | n | rho | p | Bonferroni-3 p | Pass? |\n|---|---|---|---|---|---|\n")
-    for _, r in primary_data.iterrows():
-        bonf = "✓" if r["passes_bonf3"] else "✗"
-        f.write(f"| {r['test']} | {r['n']} | {r['rho']:+.4f} | {r['p']:.2e} | {r['bonferroni_3']:.2e} | {bonf} |\n")
-    f.write("\n**All 3 primary tests pass Bonferroni-3 correction at α=0.05.**\n")
+primary_data[["test", "n", "rho", "p", "bonferroni_3", "passes_bonf3"]].to_csv(
+    OUT / "P14a_primary_tests_bonferroni.tsv", sep="\t", index=False)
 
 log(f"  Primary tests pass Bonferroni-3: {primary_data['passes_bonf3'].sum()}/3")
 for _, r in primary_data.iterrows():
@@ -303,11 +296,7 @@ log(f"  Reproducibility: ✓")
 
 
 # Save unified narrative
-with open(OUT / "P14a_NARRATIVE.md", "w") as f:
-    f.write("# Phase 14a: Critical Fixes Bundle\n\n")
-    f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-    f.write("```\n")
-    for line in LOG: f.write(line + "\n")
-    f.write("```\n")
-log(f"\nNarrative: {OUT / 'P14a_NARRATIVE.md'}")
+with open(OUT / "P14a_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14a_run.log'}")
 log("\nPhase 14a complete.")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fig 5 (v25_3 reframe) — Deep-time and cross-ancestry corroboration of the
 variant subsets in African genealogies (publication-quality). Redesigned as a
-2-panel figure (multi-agent design pass):
+2-panel figure:
 
   a  RIDGELINE of African-lineage coalescent ages: a top "All credible-set"
      ridge (96.9% present in African lineages, 76% > 200 kyr) and the three

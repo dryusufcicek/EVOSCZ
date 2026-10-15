@@ -28,7 +28,7 @@ Output:
   results/phase14p5/P14p5b_cluster_wohns_tests.tsv
   results/phase14p5/P14p5b_geva_wohns_calibration.tsv
   results/phase14p5/P14p5b_pre_OOA_partition.tsv
-  results/phase14p5/P14p5b_NARRATIVE.md
+  results/phase14p5/P14p5b_run.log
 """
 
 from pathlib import Path
@@ -193,10 +193,7 @@ part.to_csv(OUT / "P14p5b_pre_OOA_partition.tsv", sep="\t", index=False)
 log(part.to_string(index=False))
 
 # ── Narrative ──────────────────────────────────────────────────────
-with open(OUT / "P14p5b_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p5b — Wohns ages × cluster\n\n")
-    f.write(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n\n")
-    f.write("## Run log\n\n```\n")
-    f.write("\n".join(LOG))
-    f.write("\n```\n")
+with open(OUT / "P14p5b_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p5b_run.log'}")
 log("\nPhase 14p5b complete.")

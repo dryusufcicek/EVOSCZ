@@ -70,90 +70,45 @@ def get(rows, cat):
 
 
 def main():
-    out = ["# Test 1 — Allele-Age Conditioning of C0 — RESULTS (coefficient/tau-based)\n",
-           "_Context: baseline-LD v2.2 ALREADY includes MAF_Adj_Predicted_Allele_Age + MAF_Adj_ASMC, "
-           "so M0's C0 is already conditional on allele-age proxies. Test adds the cluster-defining GEVA "
-           "age (linear + deciles) on top. Verdict on tau_C0; Z descriptive only._\n"]
     parsed = {n: parse(RES / f"{n}.results") for n in MODELS}
 
-    for n, desc in MODELS.items():
-        rows = parsed[n]
-        out.append(f"\n## {n}\n_{desc}_\n")
-        if rows is None:
-            out.append("  **MISSING .results**\n"); continue
-        out.append("| annotation | tau | tau_SE | Z | Enrichment |")
-        out.append("|---|---:|---:|---:|---:|")
-        for label, cat in CLUSTER.items():
-            r = get(rows, cat)
-            if r:
-                out.append(f"| {label} ({cat}) | {r['tau']} | {r['tau_se']} | {r['z']} | {r['enr']} |")
-        # age annotation rows (file index 2)
-        age_rows = {k: v for k, v in rows.items() if k.endswith("L2_2")}
-        for k, v in age_rows.items():
-            out.append(f"| {k} | {v['tau']} | {v['tau_se']} | {v['z']} | {v['enr']} |")
-        out.append("")
+    with open(RES / "T1_SUMMARY_annotations.tsv", "w") as f:
+        f.write("model\tmodel_description\tannotation\tcategory\ttau\ttau_SE\tZ\tenrichment\n")
+        for n, desc in MODELS.items():
+            rows = parsed[n]
+            if rows is None:
+                f.write(f"{n}\t{desc}\tMISSING\t\t\t\t\t\n")
+                continue
+            for label, cat in CLUSTER.items():
+                r = get(rows, cat)
+                if r:
+                    f.write(f"{n}\t{desc}\t{label}\t{cat}\t{r['tau']}\t{r['tau_se']}\t{r['z']}\t{r['enr']}\n")
+            for k, v in rows.items():
+                if k.endswith("L2_2"):
+                    f.write(f"{n}\t{desc}\t{k}\t{k}\t{v['tau']}\t{v['tau_se']}\t{v['z']}\t{v['enr']}\n")
 
-    # ---- headline: tau_C0 across models ----
     def c0(n):
         r = get(parsed.get(n), CLUSTER["C0"])
         return (num(r["tau"]), num(r["tau_se"]), num(r["z"])) if r else (None, None, None)
 
     t0, se0, z0 = c0("M0_baseline_cluster")
-    t1, se1, z1 = c0("M1_cluster_age_mut")
-    td, sed, zd = c0("M1d_cluster_age_mut_dec")
-    t2, se2, z2 = c0("M2_cluster_age_jnt")
-
-    out.append("\n## HEADLINE — C0 conditional COEFFICIENT (tau) across models\n")
-    out.append("| model | tau_C0 | SE | Z (descriptive) |")
-    out.append("|---|---:|---:|---:|")
-    for lbl, (t, se, z) in [("M0 (no GEVA age)", (t0, se0, z0)),
-                            ("M1 (+Mut linear)", (t1, se1, z1)),
-                            ("M1d (+Mut deciles) PRIMARY", (td, sed, zd)),
-                            ("M2 (+Jnt linear)", (t2, se2, z2))]:
-        st = f"{t:.3e}" if t is not None else "NA"
-        ss = f"{se:.3e}" if se is not None else "NA"
-        sz = f"{z:+.3f}" if z is not None else "NA"
-        out.append(f"| {lbl} | {st} | {ss} | {sz} |")
-    out.append("")
-
-    notes = []
-    # sanity
+    with open(RES / "T1_SUMMARY_C0.tsv", "w") as f:
+        f.write("model\ttau_C0\tSE\tZ\tdelta_tau_vs_M0\tpct_change_vs_M0\twithin_2SE_of_M0\tZ_ge_bonferroni\n")
+        for n in MODELS:
+            t, se, z = c0(n)
+            if t is None:
+                f.write(f"{n}\tNA\tNA\tNA\tNA\tNA\tNA\tNA\n")
+                continue
+            dt = (t - t0) if t0 is not None else float("nan")
+            pct = (1 - t / t0) * 100 if t0 not in (None, 0) else float("nan")
+            overlap = int(se is not None and se0 is not None and abs(dt) <= 2 * max(se, se0))
+            s_se = "NA" if se is None else f"{se:.6e}"
+            s_z = "NA" if z is None else f"{z:+.4f}"
+            s_bonf = "NA" if z is None else str(int(z >= BONF))
+            f.write(f"{n}\t{t:.6e}\t{s_se}\t{s_z}\t{dt:+.6e}\t{pct:.2f}\t{overlap}\t{s_bonf}\n")
     if z0 is not None:
-        notes.append(("SANITY PASS" if abs(z0 - OBS_PRIMARY_Z) <= 0.30 else "⚠️ SANITY FAIL") +
-                     f": M0 C0 Z={z0:+.2f} vs published v2.2 +{OBS_PRIMARY_Z:.2f} (Δ={z0-OBS_PRIMARY_Z:+.2f}).")
-    # tau attenuation verdict (M0 -> M1d primary)
-    def verdict(name, t, se, z):
-        if t0 is None or t is None:
-            return f"{name}: tau missing — cannot judge."
-        dt = t - t0
-        pct = (1 - t / t0) * 100 if t0 != 0 else float("nan")
-        # 2-SE overlap heuristic (proxy; rigorous Δtau jackknife SE computed separately)
-        overlap = (se is not None and se0 is not None and abs(dt) <= 2 * max(se, se0))
-        survives = (z is not None and z >= BONF) and (pct < 50)
-        tag = ("C0 SURVIVES (tau stable, beyond age)" if survives else
-               "C0 ATTENUATED by age (concern not cleared)")
-        return (f"{name}: tau_C0 {t0:.2e} -> {t:.2e} (Δ={dt:+.2e}, {pct:.0f}% change; "
-                f"{'within' if overlap else 'OUTSIDE'} 2·SE; Z={z:+.2f}). => **{tag}**")
-    if td is not None:
-        notes.append("PRIMARY " + verdict("M1d deciles", td, sed, zd))
-    if t1 is not None:
-        notes.append(verdict("M1 linear", t1, se1, z1))
-    if t2 is not None:
-        notes.append(verdict("M2 jnt", t2, se2, z2))
-    notes.append("NOTE: Z not directly comparable across models (SE changes); verdict is on tau. "
-                 "Rigorous Δtau block-jackknife difference SE: see T1_jackknife_diff (uses .part_delete).")
-    notes.append("NOTE: also inspect the GEVA-age annotation's own coefficient (above) — if ~null, it "
-                 "adds little beyond baseline's existing allele-age proxies (Fix-1 caveat).")
-
-    out.append("## VERDICT / NOTES\n")
-    out += [f"- {n}" for n in notes]
-    out.append("\n_Auto-generated; analyst reviews tau-contrast + jackknife diff before final call._\n")
-
-    text = "\n".join(out)
-    (RES / "T1_SUMMARY.md").write_text(text)
-    with open(W / "DECISIONS.md", "a") as f:
-        f.write("\n\n---\n\n# RESULTS (auto-appended)\n\n" + text + "\n")
-    print(text)
+        print(f"M0 C0 Z = {z0:+.3f}; published v2.2 value {OBS_PRIMARY_Z:+.2f}; difference {z0 - OBS_PRIMARY_Z:+.3f}")
+    print((RES / "T1_SUMMARY_C0.tsv").read_text())
     print("\nSUMMARY_WRITTEN", flush=True)
 
 

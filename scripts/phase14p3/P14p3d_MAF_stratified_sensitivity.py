@@ -26,7 +26,7 @@ Approach:
 Output:
   results/phase14p3/P14p3d_maf_stratified_KS.tsv
   results/phase14p3/P14p3d_stouffer_summary.tsv
-  results/phase14p3/P14p3d_NARRATIVE.md
+  results/phase14p3/P14p3d_run.log
 """
 
 from pathlib import Path
@@ -146,9 +146,7 @@ elif ksm_C0C2 >= 0.20 and abs(zs_C0C2) > 4:
 else:
     log("    G3 VERDICT: PARTIAL — interpret with caution")
 
-with open(OUT / "P14p3d_NARRATIVE.md", "w") as f:
-    f.write(f"# Phase 14p3d — EUR-MAF stratified sensitivity\n\n")
-    f.write(f"**Date:** {datetime.now():%Y-%m-%d %H:%M}\n\n## Run log\n\n```\n")
-    f.write("\n".join(LOG))
-    f.write("\n```\n")
+with open(OUT / "P14p3d_run.log", "w") as f:
+    f.write("\n".join(LOG) + "\n")
+log(f"Run log: {OUT / 'P14p3d_run.log'}")
 log("\nPhase 14p3d complete.")
