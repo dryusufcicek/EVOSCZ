@@ -9,7 +9,7 @@ Use case: ASD Grove 2019 (iPSYCH-PGC_ASD_Nov2017.gz) — 18,381 cases / 27,969 c
 LDSC N convention: N = 4 * Nca * Nco / (Nca + Nco) = effective sample size.
 
 Schema in (minimal daner): CHR, SNP, BP, A1, A2, INFO, OR, SE, P
-Schema out (LDSC): SNP, A1, A2, N, Z
+Schema out (LDSC): SNP, A1, A2, N, Z  (A1/A2 = HapMap3 alleles; Z signed w.r.t. A1)
 
 Usage:
   python3 P14k_minimal_daner_munge.py \\
@@ -120,7 +120,11 @@ def munge_minimal(input_path: str, output_prefix: str, ncas: int, ncon: int) -> 
     df_h["N"] = n_eff
 
     print("\n[6] Writing LDSC sumstats...")
-    out = df_h[["SNP", "A1", "A2", "N", "Z"]].copy()
+    # Z is signed with respect to the HapMap3 A1 allele (see harmonise()), so the
+    # HapMap3 alleles are written as A1/A2. Writing the input alleles here would
+    # mislabel every SNP whose input A1 differs from the HapMap3 A1.
+    out = df_h[["SNP", "A1_h3", "A2_h3", "N", "Z"]].copy()
+    out.columns = ["SNP", "A1", "A2", "N", "Z"]
     out_path = f"{output_prefix}.sumstats.gz"
     out.to_csv(out_path, sep="\t", index=False, compression="gzip")
     print(f"  Wrote {len(out):,} rows to {out_path}")

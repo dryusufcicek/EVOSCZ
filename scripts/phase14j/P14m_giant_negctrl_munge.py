@@ -11,7 +11,7 @@ C0 cluster annotation captures specifically schizophrenia-architectural
 variation or broader generic ancient-allele structure.
 
 Schema in:  CHR POS SNP Tested_Allele Other_Allele Freq_Tested_Allele_in_HRS BETA SE P N
-Schema out: SNP A1 A2 N Z
+Schema out: SNP A1 A2 N Z  (A1/A2 = HapMap3 alleles; Z signed w.r.t. A1)
 
 Usage:
   python3 P14m_giant_negctrl_munge.py --input <giant.txt.gz> --output-prefix <prefix>
@@ -110,7 +110,11 @@ def munge_giant(input_path: str, output_prefix: str) -> None:
     df_h = df_h[df_h["N"].notna() & (df_h["N"] > 0)].reset_index(drop=True)
 
     print("\n[5] Writing LDSC sumstats...")
-    out = df_h[["SNP", "A1", "A2", "N", "Z"]].copy()
+    # Z is signed with respect to the HapMap3 A1 allele (see harmonise()), so the
+    # HapMap3 alleles are written as A1/A2. Writing the input alleles here would
+    # mislabel every SNP whose input A1 differs from the HapMap3 A1.
+    out = df_h[["SNP", "A1_h3", "A2_h3", "N", "Z"]].copy()
+    out.columns = ["SNP", "A1", "A2", "N", "Z"]
     out_path = f"{output_prefix}.sumstats.gz"
     out.to_csv(out_path, sep="\t", index=False, compression="gzip")
     print(f"  Wrote {len(out):,} rows to {out_path}")

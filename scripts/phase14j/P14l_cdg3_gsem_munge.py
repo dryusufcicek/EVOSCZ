@@ -12,7 +12,7 @@ LDSC compatibility verified: Grotzinger 2025 themselves apply S-LDSC enrichment 
 (excitatory-neuron F2; oligodendrocyte F4). Factor Z-scores are LDSC-input-ready.
 
 Schema in (CDG3 tsv): SNP, CHR, BP, MAF, A1, A2, BETA, SE, P, Q_P
-Schema out (LDSC): SNP, A1, A2, N, Z
+Schema out (LDSC): SNP, A1, A2, N, Z  (A1/A2 = HapMap3 alleles; Z signed w.r.t. A1)
 
 QSNP filter: NOT applied in main munge (raw factor sumstats). Sensitivity-only filter
 deferred to a separate run with --qsnp-threshold flag if needed.
@@ -113,7 +113,11 @@ def munge_cdg3(input_path: str, output_prefix: str, implied_n: float) -> None:
     df_h["N"] = implied_n  # Fixed implied N from Genomic SEM
 
     print("\n[6] Writing LDSC sumstats...")
-    out = df_h[["SNP", "A1", "A2", "N", "Z"]].copy()
+    # Z is signed with respect to the HapMap3 A1 allele (see harmonise()), so the
+    # HapMap3 alleles are written as A1/A2. Writing the input alleles here would
+    # mislabel every SNP whose input A1 differs from the HapMap3 A1.
+    out = df_h[["SNP", "A1_h3", "A2_h3", "N", "Z"]].copy()
+    out.columns = ["SNP", "A1", "A2", "N", "Z"]
     out_path = f"{output_prefix}.sumstats.gz"
     out.to_csv(out_path, sep="\t", index=False, compression="gzip")
     print(f"  Wrote {len(out):,} rows to {out_path}")

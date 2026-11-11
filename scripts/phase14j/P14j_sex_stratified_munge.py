@@ -23,7 +23,7 @@ Code-review fixes (FIX-E-H-1, -2, -3) applied identically:
   [FIX-E-H-3] Effective sample size: N = 4 * Nca * Nco / (Nca + Nco).
 
 Schema in (daner): CHR, SNP, BP, A1, A2, FRQ_A_*, FRQ_U_*, INFO, OR, SE, P, ..., Nca, Nco, Neff
-Schema out (LDSC): SNP, A1, A2, N, Z
+Schema out (LDSC): SNP, A1, A2, N, Z  (A1/A2 = HapMap3 alleles; Z signed w.r.t. A1)
 
 Usage:
   python3 P14j_sex_stratified_munge.py --input <daner.gz> --output-prefix <prefix>
@@ -164,7 +164,11 @@ def munge_daner(input_path: str, output_prefix: str) -> None:
 
     # [7] Output LDSC format: SNP A1 A2 N Z
     print("\n[7] Writing LDSC sumstats...")
-    out = df_h[["SNP", "A1", "A2", "N", "Z"]].copy()
+    # Z is signed with respect to the HapMap3 A1 allele (see harmonise()), so the
+    # HapMap3 alleles are written as A1/A2. Writing the input alleles here would
+    # mislabel every SNP whose input A1 differs from the HapMap3 A1.
+    out = df_h[["SNP", "A1_h3", "A2_h3", "N", "Z"]].copy()
+    out.columns = ["SNP", "A1", "A2", "N", "Z"]
     out_path = f"{output_prefix}.sumstats.gz"
     out.to_csv(out_path, sep="\t", index=False, compression="gzip")
     print(f"  Wrote {len(out):,} rows to {out_path}")

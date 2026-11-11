@@ -65,6 +65,7 @@ Main-text statistics map to the same result files: cluster sizes/ages → `resul
 PGC (https://pgc.unc.edu), GTEx v10 (https://gtexportal.org), Atlas of Variant Age (https://human.genome.dating), Bryois 2022 single-cell eQTL, Akbari 2024 (Reich Lab Dataverse), Field 2016 SDS, baseline-LD v2.2 (Zenodo 10.5281/zenodo.10515792), Wohns 2022 unified tree sequence. See the manuscript Data-availability statement for accessions.
 
 ## Notes
+- **v1.0.1 (2026-11-11).** The `scripts/phase14j/` munge scripts (P14j, P14k, P14l, P14m) sign Z with respect to the HapMap3 A1 allele but wrote the input GWAS alleles as A1/A2, so SNPs whose input A1 differs from the HapMap3 A1 were mislabelled. They now write the HapMap3 alleles. `scripts/phase14j/P14n_fix_allele_labels.py` repairs files produced by the earlier version. The results in the manuscript are unaffected: these files enter the analysis only through `ldsc.py --h2`, which depends on Z² alone. Files written by the earlier version must not be used for signed analyses (genetic correlation, Mendelian randomisation, polygenic scores) without this repair.
 - `scripts/phase8/`, `scripts/phase9/` are exploratory early-pipeline analyses, **superseded and not part of the published (v25_3) results**; they are omitted from this release (available from the authors on request).
 - `scripts/phase18/P18_*` CSV/DOCX builders are supplement-packaging helpers (superseded by the `supplementary/` deliverables).
 
